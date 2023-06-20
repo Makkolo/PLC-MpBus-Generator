@@ -19,7 +19,7 @@ std::string sInfo = "STLV80_563\tSTLV80_A_563_";
 std::string sGVL = "STLV80_360"; //ønsket navn på GVL
 std::string sAdresseFormat = "STLV80_A_360_";
 int iNavnFormatInn = 1;
-int iNavnFormatUt = 3;
+std::string sNavnFormat = "";
 std::string sVAV[200];      //Navn på vaver
 std::string sPort[200];     //Porten/linjen på VAV-en
 std::string sAdresse[200];      //Adressen til VAV-en
@@ -51,6 +51,7 @@ void OpenFile()
         std::cout << "Cant open file\n\tHusk Ikke run program i 'rare' mapper (mtp. adresse)\n";     //Melder ifra om feil hvis fil ikke ble åpnet
         //Sleep(10000);
         OpenFile();
+        return;
     }
 
     fInput.close();
@@ -286,9 +287,12 @@ int main() //Starter med å lokalisere seg selv, og får derfor sin egen plasserin
 
     Read();
     Prossesering();
-    WriteXML_MP(sGVL, sVAV, bUsed,
+    WriteXML_MP(
+        sPath2, 
+        sGVL, sVAV, bUsed,
         sPort, sAdresse, sSerieNrYW, sSerieNrDN, sSerieNrTID, sSerieNrTS,
-        sMin, sNorm, sMax, sSize);
+        sMin, sNorm, sMax, sSize,
+        sAdresseFormat);
 
     auto tStopp = std::chrono::high_resolution_clock::now();
     auto tRuntime = std::chrono::duration_cast<std::chrono::milliseconds>(tStopp - tStart);

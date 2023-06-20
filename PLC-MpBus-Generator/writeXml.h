@@ -147,6 +147,11 @@ O_Format IO_Format(std::string sInput, std::string sAdresseFormat, int iNavnForm
 
         sInput = sInput.substr(pos + 1, iSize);       //Fjerner verdien fra input variabelen
         break;
+
+    default:
+        std::cout << "ERROR: Navneformat (" << iNavnFormatInn << ") out of range (1-7)" << std::endl;
+        Sleep(10000);
+        abort();
     }
     O_Format Out = { (sAdresseFormat + "_" + sVAV), sInput };
     return Out;
@@ -158,18 +163,16 @@ O_Format IO_Format(std::string sInput, std::string sAdresseFormat, int iNavnForm
 
 
 
-void WriteXML_MP(std::string sGVL, std::string VAV[200], bool bUsed[200],
+void WriteXML_MP(
+    std::string sPath,
+    std::string sGVL, std::string VAV[200], bool bUsed[200],
     std::string Port[200], std::string adr[200],
     std::string SN1[200], std::string SN2[200], std::string SN3[200], std::string SN4[200],
-    std::string sMin[200], std::string sNorm[200], std::string sMax[200], std::string sSize[200])
+    std::string sMin[200], std::string sNorm[200], std::string sMax[200], std::string sSize[200],
+    std::string& sAdresseFormat)
 {
 
-    WCHAR wcPath[MAX_PATH];     //Lager Path variabel
-    GetModuleFileNameW(NULL, wcPath, MAX_PATH);     //Lagrer sin egen lokasjon i path variabelen
-    std::wstring wsPath(&wcPath[0]);     //convert to wstring
-    std::string sPath(wsPath.begin(), wsPath.end());     //convert to string.
-    size_t pos = sPath.find("VAV_Adressering_3.exe");     //Lokaliserer hvor i pathen selve exe filen er
-    sPath = sPath.substr(0, pos);      //Lager en ny variabel hvor det lagres en ny variabel hvor det lagres lokasjonen til mappen som exe filen er lagret i (path - exe fil)
+    size_t pos = 0;     //Lokaliserer hvor i pathen selve exe filen er
     sPath = sPath + "AutGenImport.xml";
 
     //Kopierer adressen til XML filen
@@ -620,7 +623,7 @@ void WriteXML_MP(std::string sGVL, std::string VAV[200], bool bUsed[200],
     fOutput << "<addData/>\n" + Tabs(2);
     fOutput << "</pou>\n" + Tabs(2);
     //PRG
-    fOutput << "<pou name=\"PRG_VAV_Adressering\" pouType=\"program\">\n" + Tabs(3);
+    fOutput << "<pou name=\"PRG_360_VAV_Adressering\" pouType=\"program\">\n" + Tabs(3);
     fOutput << "<interface>\n" + Tabs(4);
     fOutput << "<localVars>\n" + Tabs(5);
     //Local Var
@@ -728,14 +731,16 @@ void WriteXML_MP(std::string sGVL, std::string VAV[200], bool bUsed[200],
     fOutput << "iVAV:= (iVAV+1);\n\t\t";
     fOutput << "END_IF\n";
     fOutput << "END_IF" << std::endl;
-    //sGVL
+
     fOutput << "</xhtml>\n" + Tabs(4);
     fOutput << "</ST>\n" + Tabs(3);
     fOutput << "</body>\n" + Tabs(3);
     fOutput << "<addData/>\n" + Tabs(2);
     fOutput << "</pou>\n" + Tabs(1);
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //Nytt
+
+
+
+
     int iLinjer = 0;
     for (int i = 0; i < 200; i++)
     {
@@ -763,7 +768,7 @@ void WriteXML_MP(std::string sGVL, std::string VAV[200], bool bUsed[200],
         iCfc_Id = 0;
         iCfc_y = 0;
 
-        fOutput << "<pou name=\"PRG_MP" << i << "\" pouType=\"program\">\n" + Tabs(3);
+        fOutput << "<pou name=\"PRG_360_MP" << i << "\" pouType=\"program\">\n" + Tabs(3);
         fOutput << "<interface>\n" + Tabs(4);
 
         //Local Var
@@ -874,7 +879,89 @@ void WriteXML_MP(std::string sGVL, std::string VAV[200], bool bUsed[200],
         fOutput << "</pou>\n\t";
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Nytt
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    bool xFirst = true;
+
+    fOutput << "<pou name=\"PRG_360_VAV_Max\" pouType=\"program\">\n" + Tabs(3);
+    fOutput << "<interface>\n" + Tabs(4);
+    fOutput << "<localVars>\n" + Tabs(5);
+    fOutput << "</localVars>\n" + Tabs(3);
+    fOutput << "</interface>\n" + Tabs(3);
+    fOutput << "<body>\n" + Tabs(4);
+    fOutput << "<ST>" << std::endl << Tabs(5);
+    fOutput << "<xhtml xmlns=\"http://www.w3.org/1999/xhtml\">";
+
+
+
+    //Lager max for tilluftsspjeld
+    fOutput << "//Max spjeld vinkel for tilluftsspjeld\n";
+    fOutput << sGVL << "." << sAdresseFormat << "_001_OU001_SQ401_Max:=MAX\n(\n\t";
+
+    for (int i = 0; i < 200; i++)
+    {
+        if (bUsed[i])
+        {
+            pos = VAV[i].find("SQ") + 2;
+            if (VAV[i].substr(pos, 1) == "4")
+            {
+                if (xFirst)
+                {
+                    fOutput << "SEL(" << sGVL << "." << VAV[i] << ".xdontoptimize, " << sGVL << "." << VAV[i] << ".rOutPosition, 0)";
+                    xFirst = false;
+                }
+                else
+                {
+                    fOutput << ",\n\t";
+                    fOutput << "SEL(" << sGVL << "." << VAV[i] << ".xdontoptimize, " << sGVL << "." << VAV[i] << ".rOutPosition, 0)";
+                }
+            }
+        }
+        else
+            break;
+    }
+    fOutput << "\n);\n\n";
+    xFirst = true;
+
+    //Lager max for avtrekksspjeld
+    fOutput << "//Max spjeld vinkel for avtrekksspjeld\n";
+    fOutput << sGVL << "." << sAdresseFormat << "_001_OU001_SQ501_Max:=MAX\n(\n\t";
+
+    for (int i = 0; i < 200; i++)
+    {
+        if (bUsed[i])
+        {
+            pos = VAV[i].find("SQ") + 2;
+            if (VAV[i].substr(pos, 1) == "5")
+            {
+                if (xFirst)
+                {
+                    fOutput << "SEL(" << sGVL << "." << VAV[i] << ".xdontoptimize, " << sGVL << "." << VAV[i] << ".rOutPosition, 0)";
+                    xFirst = false;
+                }
+                else
+                {
+                    fOutput << ",\n\t";
+                    fOutput << "SEL(" << sGVL << "." << VAV[i] << ".xdontoptimize, " << sGVL << "." << VAV[i] << ".rOutPosition, 0)";
+                }
+            }
+        }
+        else
+            break;
+
+    }
+    fOutput << "\n);\n\n";
+    xFirst = true;
+
+
+    fOutput << "</xhtml>\n" + Tabs(4);
+    fOutput << "</ST>\n" + Tabs(3);
+    fOutput << "</body>\n" + Tabs(3);
+    fOutput << "<addData/>\n" + Tabs(2);
+    fOutput << "</pou>\n" + Tabs(1);
+
+
+
     fOutput << "</pous>\n";
     fOutput << "</types>\n";
     fOutput << "<instances>\n" + Tabs(1);
@@ -883,6 +970,29 @@ void WriteXML_MP(std::string sGVL, std::string VAV[200], bool bUsed[200],
     fOutput << "<addData>\n" + Tabs(1);
     fOutput << "<data name=\"http://www.3s-software.com/plcopenxml/globalvars\" handleUnknown=\"implementation\">\n" + Tabs(2);
     fOutput << "<globalVars name=\"" << sGVL << /*"\" retain=\"true\" persistent=\"true\*/"\">\n" + Tabs(3);
+
+
+    //Nytt
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fOutput << "<variable name=\"" << sAdresseFormat << "_001_OU001_SQ401_Max\">\n" + Tabs(6);
+    fOutput << "<type>\n" + Tabs(7);
+    fOutput << "<REAL/>\n" + Tabs(6);
+    fOutput << "</type>\n" + Tabs(5);
+    fOutput << "<documentation>\n" + Tabs(7);
+    fOutput << "<xhtml xmlns=\"http://www.w3.org/1999/xhtml\">Max spjeldvinkel tilluft</xhtml>\n" + Tabs(6);      //Kommentar
+    fOutput << "</documentation>\n" + Tabs(5);
+    fOutput << "</variable>\n" + Tabs(5);
+
+    fOutput << "<variable name=\"" << sAdresseFormat << "_001_OU001_SQ501_Max\">\n" + Tabs(6);
+    fOutput << "<type>\n" + Tabs(7);
+    fOutput << "<REAL/>\n" + Tabs(6);
+    fOutput << "</type>\n" + Tabs(5);
+    fOutput << "<documentation>\n" + Tabs(7);
+    fOutput << "<xhtml xmlns=\"http://www.w3.org/1999/xhtml\">max spjeldvinkel avtrekk</xhtml>\n" + Tabs(6);      //Kommentar
+    fOutput << "</documentation>\n" + Tabs(5);
+    fOutput << "</variable>\n" + Tabs(5);
+    ////////////////////////
 
     for (int i = 0; i < 200; i++)
     {
