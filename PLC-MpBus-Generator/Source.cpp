@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <fstream>
 #include <string>
+#include <chrono>
 #include "mortLib.h"
 #include "writeXml.h"
 
@@ -10,7 +11,7 @@
 
 
 
-std::string sPath2;      //Adresse til mappe hvor exe fil er lagret
+std::string sFilPath, sPath2;      //Adresse til mappe hvor exe fil er lagret
 std::string sSource;     //Variabel som velger filnavn på fil som skal leses
 std::string sInput[200];        //Input verdier, hver linje i hver variabel i arrayet
 bool bUsed[200];       //Viser om Inputen faktisk er brukt, eller om det er tomt. For å ungå å ta inn tomme linjer
@@ -31,33 +32,41 @@ std::string sNorm[200];        //Andre verdien som skal i serieNr arrayet
 std::string sMax[200];       //Tredje verdien som skal i serieNr arrayet
 std::string sSize[200];        //Fjerde verdien som skal i serieNr arrayet
 
-void Read() //Spør etter navn på fil som skal leses, og leser deretter inn hver linje og lagrer dem i egne variabler.
+
+void OpenFile()
 {
     //sSource = "1.txt";        //Variabel som velger filnavn på fil som skal leses
     std::cout << "Filnavn: ";      //Spør etter filnavn
     std::cin >> sSource;       //Tar inn filnavn og lagrer på sSource
 
-    std::string sFilPath = (sPath2 + sSource);       //Den fulle adressen til filen som skal leses fra
-    std::cout << sFilPath << "\n";                     //test
-    std::ifstream fInput(sFilPath);      //Åpner fil som skal leses fra
-    //fInput.open(sFilPath);        test
+    sFilPath = (sPath2 + sSource);       //Den fulle adressen til filen som skal leses fra
+    std::cout << sFilPath << "\n";                   //test
+
+
+    std::ifstream fInput(sFilPath + ".txt");      //Åpner fil som skal leses fra
+
+    //fInput.open(sFilPath);        //test
     if (fInput.is_open() == false)       //Sjekker om filen ble åpnet
     {
-        std::cout << "Cant open file\n\tHusk .txt, Ikke run program i 'rare' mapper (mtp. adresse)\n";     //Melder ifra om feil hvis fil ikke ble åpnet
+        std::cout << "Cant open file\n\tHusk Ikke run program i 'rare' mapper (mtp. adresse)\n";     //Melder ifra om feil hvis fil ikke ble åpnet
         //Sleep(10000);
-        Read();
+        OpenFile();
     }
-    else        //Melder ifra om at fil ble åpnet og gjør klar til å importere
-    {
-        std::cout << "File found\n";
-        /*std::cout << "Skriv inn GVL navn\n\teksempel: STLV80_360\n\tGVL navn: ";      //Spør etter GVL navn eks. STLV80_360
-        std::cin >> sGVL;       //Tar inn GVL Navn
-        std::cout << "Skriv inn adresseformat\n\teksempel: STLV80_A_360_[VAV]\t IKKE ta med VAV\n\tAdresseformat: ";      //Spør etter adresse format eks. STLV80_563.STLV80_A_563_
-        std::cin >> sAdresseFormat;*/      //Tar inn adresseformat 
-        std::cout << "\nVAV Navnformat (Input)?\n\tType 1: 360.3A301-SQ401\n\tType 2: 360.3A301.SQ401\n\tType 3: 360-3A301-SQ401\n\tType 4: 360_3A301_SQ401\n\tType 5: 3A301.SQ401\n\tType 6: 3A301-SQ401\n\tType 7: 3A301_SQ401\n\n1-7: ";        //Spør etter navn inn format eks. 3A301.SQ501
-        std::cin >> iNavnFormatInn;       //Tar inn navnformat  
-        //Sleep(2000);
-    }
+
+    fInput.close();
+
+    std::cout << "File found\n";
+    /*std::cout << "Skriv inn GVL navn\n\teksempel: STLV80_360\n\tGVL navn: ";      //Spør etter GVL navn eks. STLV80_360
+    std::cin >> sGVL;       //Tar inn GVL Navn
+    std::cout << "Skriv inn adresseformat\n\teksempel: STLV80_A_360_[VAV]\t IKKE ta med VAV\n\tAdresseformat: ";      //Spør etter adresse format eks. STLV80_563.STLV80_A_563_
+    std::cin >> sAdresseFormat;*/      //Tar inn adresseformat 
+    std::cout << "\nVAV Navnformat (Input)?\n\tType 1: 360.3A301-SQ401\n\tType 2: 360.3A301.SQ401\n\tType 3: 360-3A301-SQ401\n\tType 4: 360_3A301_SQ401\n\tType 5: 3A301.SQ401\n\tType 6: 3A301-SQ401\n\tType 7: 3A301_SQ401\n\n1-7: ";        //Spør etter navn inn format eks. 3A301.SQ501
+    std::cin >> iNavnFormatInn;       //Tar inn navnformat  
+    //Sleep(2000);
+}
+void Read() //Spør etter navn på fil som skal leses, og leser deretter inn hver linje og lagrer dem i egne variabler.
+{
+    std::ifstream fInput(sFilPath + ".txt");      //Åpner fil som skal leses fra
 
     getline(fInput, sInfo);     //Leser inn første linje hvor info skal være
 
@@ -118,13 +127,13 @@ void Prossesering() //Bruker Input variablene og deler dem opp i sepparate varia
 
             for (int j = 0; j < 3; j++)      //Går gjennom og deler opp etter Navn, Port, Adresse
             {
-                while (sInput[i].substr(0, 1) == " " || sInput[i].substr(0, 1) == "\t")        //Fjerner evt. mellomrom/tabs som er før verdiene
+                while (sInput[i].substr(0, 1) == "\t")        //Fjerner evt. mellomrom/tabs som er før verdiene
                 {
                     iSize = ((sInput[i].size()) - 1);
                     sInput[i] = (sInput[i].substr(1, iSize));
                 }
 
-                pos = sInput[i].find(" ");      //Finner neste mellomrom
+                pos = sInput[i].find("\t");      //Finner neste mellomrom
                 if (pos < 1)        //Melder om feil og avbryter hvis mellomrom(før verdier) ikke ble fjernet
                 {
                     std::cout << "\n\nError: line 80.\n\n";
@@ -271,13 +280,23 @@ int main() //Starter med å lokalisere seg selv, og får derfor sin egen plasserin
     sPath2 = sPath.substr(0, pos);      //Lager en ny variabel hvor det lagres en ny variabel hvor det lagres lokasjonen til mappen som exe filen er lagret i (path - exe fil)
     //std::cout << sPath2 << "\n";       test
 
+    OpenFile();
+
+    auto tStart = std::chrono::high_resolution_clock::now();
+
     Read();
     Prossesering();
     WriteXML_MP(sGVL, sVAV, bUsed,
         sPort, sAdresse, sSerieNrYW, sSerieNrDN, sSerieNrTID, sSerieNrTS,
         sMin, sNorm, sMax, sSize);
 
-    //std::cout << "\nFerdig, 0 feil oppdaget\n\n" << "Adresse til import fil:\n" << (sPath2 + sSource + "Adresser.txt") << "\n\n";
+    auto tStopp = std::chrono::high_resolution_clock::now();
+    auto tRuntime = std::chrono::duration_cast<std::chrono::milliseconds>(tStopp - tStart);
+
+    std::ifstream inFile(sPath2 + "/AutGenImport.xml");
+
+    std::cout << "Done" << std::endl << "Generated " << std::count(std::istreambuf_iterator<char>(inFile), std::istreambuf_iterator<char>(), '\n') << " lines in " << tRuntime.count() << " milliseconds" << std::endl;
+
     Sleep(30000);
 
     return 0;
