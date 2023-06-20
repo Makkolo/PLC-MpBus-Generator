@@ -25,7 +25,7 @@ Generates XML file based on the [IEC 61131-3 standard](https://plcopen.org/techn
 ## Input format
 ### .txt file
 Currently uses a txt file as input. The txt file needs to be split with tabs and lines, like this:
-| Global variable list name  | Variable name (before VAV name) |  |  |  | | | | |
+| Global variable list name  | Variable name (before VAV name) |  |  | | | | |
 | -------------------------- | ------------------------------- | ------------------------- | ------------------------- | ------------------- | ------------------- | ------------------- | ------------------- |
 | VAV  name  | MP-bus line/card  | Line address | VAV code/serial nr. | Minimum air sp | Normal air sp | Maximum air SP | VAV size (airflow) |
 | next VAV  name  | MP-bus line/card  | Line address | VAV code/serial nr. | Minimum air sp | Normal air sp | Maximum air SP | VAV size (airflow) |
