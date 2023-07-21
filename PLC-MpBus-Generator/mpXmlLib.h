@@ -33,9 +33,9 @@ void Mp_cfc_Master(std::string& sPath, std::string& sGvl, int& iLinje, int* iCfc
     fOutput << "<expression />\n\t";
     fOutput << "</connectionPointOut>\n\t";
     if (iLinje == 1)
-        fOutput << "<expression>IoConfig_Globals.MP_Bus_Master</expression>\n\t";
+        fOutput << "<expression>_750_643_08</expression>\n\t";
     else
-        fOutput << "<expression>IoConfig_Globals.MP_Bus_Master_" << iLinje - 1 << "</expression>\n\t";
+        fOutput << "<expression>_750_643_08_" << iLinje - 1 << "</expression>\n\t";
 
     fOutput << "</inVariable>\n\t";
 
@@ -44,9 +44,9 @@ void Mp_cfc_Master(std::string& sPath, std::string& sGvl, int& iLinje, int* iCfc
     fOutput << "<connectionPointIn>\n\t";
 
     if (iLinje == 1)
-        fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"IoConfig_Globals.MP_Bus_Master\" />\n\t";
+        fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"_750_643_08\" />\n\t";
     else
-        fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"IoConfig_Globals.MP_Bus_Master_" << iLinje - 1 << "\" />\n\t";
+        fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"_750_643_08r_" << iLinje - 1 << "\" />\n\t";
 
 
     fOutput << "</connectionPointIn>\n\t";
