@@ -46,7 +46,7 @@ void Mp_cfc_Master(std::string& sPath, std::string& sGvl, int& iLinje, int* iCfc
     if (iLinje == 1)
         fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"_750_643_08\" />\n\t";
     else
-        fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"_750_643_08r_" << iLinje - 1 << "\" />\n\t";
+        fOutput << "<connection refLocalId=\"" << (1 + *iCfc_Id) << "\" formalParameter=\"_750_643_08_" << iLinje - 1 << "\" />\n\t";
 
 
     fOutput << "</connectionPointIn>\n\t";
